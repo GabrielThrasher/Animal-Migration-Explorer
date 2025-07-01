@@ -32,7 +32,7 @@ with open("article_data.json", "r") as file:
   article_data = json.load(file)
 
 #Connect to the articles database. 
-conn = sqlite3.connect('articles.db')
+conn = sqlite3.connect('../articles.db')
 cursor = conn.cursor()
 
 animals = ["Cranes", "ForkTailedFlycatchers", "RedBackedShrike", "WhiteCrestedElaenia", "CommonTerns",
