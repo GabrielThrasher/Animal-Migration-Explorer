@@ -35,12 +35,13 @@ with open("article_data.json", "r") as file:
 conn = sqlite3.connect('../articles.db')
 cursor = conn.cursor()
 
-animals = ["Cranes", "ForkTailedFlycatchers", "RedBackedShrike", "WhiteCrestedElaenia", "CommonTerns",
-"CaspianTerns",
-"LoggerheadSeaTurtles",
-"SnowyOwls",
-"WhiteFrontedGeese",
-"RingedSeals"]
+animals = ["Cranes", "Fork-tailed_Flycatchers", "Red-backed_Shrike",
+           "White-crested_Elaenia", "Common_Terns",
+"Caspian_Terns",
+"Loggerhead Sea_Turtles",
+"Snowy_Owls",
+"White-fronted_Geese",
+"Ringed_Seals"]
 
 #Create tables named by each anima. 
 def populate_table(animal): 
