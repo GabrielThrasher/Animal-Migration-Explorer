@@ -9,7 +9,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
+    env:
+      API_key: "AIzaSyA0i0UfkfElGlmPcE0zhliyZsvsikvgPQY"
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
