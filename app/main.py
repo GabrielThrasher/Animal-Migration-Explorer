@@ -1,15 +1,22 @@
 import sqlite3
+import sys
 import textwrap
 from app.chatbot.chatbot import answer_query
 from app.map_generation.generate_map import generate_map
 
 
 class CLI:
-    def __init__(self, program_char_width=120, page_char_margin=3):
+    def __init__(self, program_char_width=0, page_char_margin=0):
         self.valid_list_of_commands = ["w", "q", "b"]
-        self.program_char_width = program_char_width
-        self.page_char_margin = page_char_margin
-        self.page_char_width = program_char_width - page_char_margin
+        if program_char_width < 60 or program_char_width > 200:
+            self.program_char_width = 100
+        else:
+            self.program_char_width = program_char_width
+        if page_char_margin < 2 or page_char_margin > 5:
+            self.page_char_margin = 3
+        else:
+            self.page_char_margin = page_char_margin
+        self.page_char_width = self.program_char_width - self.page_char_margin
         self.invalid_input_prefix = ">>>> INVALID INPUT -- PLEASE TRY AGAIN. "
         self.page_divider = "=" * self.program_char_width
         self.section_divider = "-" * (
@@ -237,7 +244,7 @@ class CLI:
         )
     
         animal_table = self.animal.replace(" ", "_")
-        conn = sqlite3.connect("../database/articles.db")
+        conn = sqlite3.connect("./database/articles.db")
         cursor = conn.cursor()
         animal_query = f"SELECT * FROM '{animal_table}'"
         cursor.execute(animal_query)
@@ -269,8 +276,8 @@ class CLI:
             elif user_input == "m":
                 save_path = generate_map(
                     self.animal.replace(" ", "_"),
-                    "../database/coordinates.db",
-                    save_dir="map_generation/saved_maps/"
+                    "./database/coordinates.db",
+                    save_dir="./app/map_generation/saved_maps/"
                 )
                 self.wrap_text("Generated and saved the migration pattern map "
                                f"at {save_path}.")
@@ -307,7 +314,7 @@ class CLI:
                 break
 
             elif user_input.lower() == "s":
-                chatbot_dir = "./chatbot/"
+                chatbot_dir = "./app/chatbot/"
                 convo_file_path = chatbot_dir + "chatbot_convo.txt"
                 with open(convo_file_path, "w") as file:
                     file.write(self.chatbot_convo.strip())
@@ -326,5 +333,17 @@ class CLI:
     
    
 if "__main__" == __name__:
-    cli = CLI()
+    if len(sys.argv) == 1:
+        cli = CLI()
+    else:
+        all_digits = True
+        for arg in sys.argv[1:]:
+            if not arg.isdigit():
+                all_digits = False
+
+        if all_digits:
+            cli = CLI(*list(map(int, sys.argv[1:min(len(sys.argv), 3)])))
+        else:
+            cli = CLI()
+
     cli.welcome_page()
