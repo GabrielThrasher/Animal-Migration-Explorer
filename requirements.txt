@@ -1,0 +1,10 @@
+pytest
+anyio
+google-genai
+python-dotenv
+matplotlib
+sqlite3
+os
+cartopy
+adjustText
+calendar
