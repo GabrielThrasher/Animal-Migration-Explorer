@@ -6,7 +6,7 @@ import os
 import app.main as main
 import pytest
 from unittest.mock import patch
-from app.cli import CLI  # Make sure this path matches your project
+from app.main import CLI  # Make sure this path matches your project
 
 # Test 1: Welcome page should call habitat_page() on 's'
 def test_welcome_page_calls_habitat_page(monkeypatch):
