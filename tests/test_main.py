@@ -4,83 +4,38 @@ from unittest.mock import patch
 import os
 
 import app.main as main
+import pytest
+from unittest.mock import patch
+from app.cli import CLI  # Make sure this path matches your project
 
-def test_start_page_valid_s(capsys):
-   
-    with patch('builtins.input', return_value='s'), \
-         patch('app.main.choose_habitat') as mock_choose:
-        
-        main.start_page()
+# Test 1: Welcome page should call habitat_page() on 's'
+def test_welcome_page_calls_habitat_page(monkeypatch):
+    cli = CLI()
+    monkeypatch.setattr('builtins.input', lambda _: 's')
 
-        
-        captured = capsys.readouterr()
-        assert "Welcome to Animal Migration Explorer!" in captured.out
-        assert "Valid commands" in captured.out
+    with patch.object(cli, 'habitat_page') as mock_habitat_page:
+        cli.welcome_page()
+        mock_habitat_page.assert_called_once()
 
-        
-        mock_choose.assert_called_once()
 
-def test_choose_habitat_valid_input(capsys):
-    with patch('builtins.input', return_value='wetlands'), \
-         patch('app.main.choose_animal') as mock_choose_animal:
-        
-        main.choose_habitat()
-        
-        captured = capsys.readouterr()
-        assert "Wetlands" in captured.out  # prompt should contain habitat name
-        mock_choose_animal.assert_called_once_with("Wetlands")
-def test_choose_animal_calls_get_article_info(capsys):
-    habitat = "Wetlands"
-    animal = main.get_animal_selection()[habitat][0].lower()  # first animal lowercase
-    
-    with patch('builtins.input', side_effect=[animal]), \
-         patch('app.main.get_article_info') as mock_get_info, \
-         patch('app.main.start_page'), \
-         patch('app.main.choose_habitat'):
-        main.choose_animal(habitat)
+# Test 2: Habitat page sets habitat and calls animal_page()
+def test_habitat_page_sets_habitat(monkeypatch):
+    cli = CLI()
+    monkeypatch.setattr('builtins.input', lambda _: '1')  # "Wetlands"
 
-        captured = capsys.readouterr()
-        assert habitat in captured.out
-        mock_get_info.assert_called_once_with(main.get_animal_selection()[habitat][0], habitat)
+    with patch.object(cli, 'animal_page') as mock_animal_page:
+        cli.habitat_page()
+        assert cli.habitat == 'Wetlands'
+        mock_animal_page.assert_called_once()
 
-def test_choose_animal_back_calls_choose_habitat():
-    habitat = "Wetlands"
 
-    with patch('builtins.input', side_effect=['b']), \
-         patch('app.main.choose_habitat') as mock_choose_habitat, \
-         patch('app.main.start_page'), \
-         patch('app.main.get_article_info'):
-        main.choose_animal(habitat)
-        mock_choose_habitat.assert_called_once()
+# Test 3: Animal page sets animal and calls article_page()
+def test_animal_page_sets_animal(monkeypatch):
+    cli = CLI()
+    cli.habitat = 'Wetlands'
+    monkeypatch.setattr('builtins.input', lambda _: '1')  # "Cranes"
 
-def test_choose_animal_start_calls_start_page():
-    habitat = "Wetlands"
-
-    with patch('builtins.input', side_effect=['s']), \
-         patch('app.main.start_page') as mock_start_page, \
-         patch('app.main.choose_habitat'), \
-         patch('app.main.get_article_info'):
-        main.choose_animal(habitat)
-        mock_start_page.assert_called_once()
-
-def test_get_article_info_back_calls_choose_animal(capsys):
-    animal = "Cranes"
-    habitat = "Wetlands"
-
-    mock_cursor = MagicMock()
-    mock_cursor.fetchall.return_value = [("url1", "summary1"), ("url2", "summary2")]
-    mock_conn = MagicMock()
-    mock_conn.cursor.return_value = mock_cursor
-
-    with patch('sqlite3.connect', return_value=mock_conn), \
-         patch('builtins.input', side_effect=['b']), \
-         patch('app.main.choose_animal') as mock_choose_animal, \
-         patch('app.main.start_page'), \
-         patch('app.main.chatbot'):
-        main.get_article_info(animal, habitat)
-
-        captured = capsys.readouterr()
-        assert "url1" in captured.out and "summary1" in captured.out
-        assert "url2" in captured.out and "summary2" in captured.out
-
-        mock_choose_animal.assert_called_once_with(habitat)
+    with patch.object(cli, 'article_page') as mock_article_page:
+        cli.animal_page()
+        assert cli.animal == 'Cranes'
+        mock_article_page.assert_called_once()
