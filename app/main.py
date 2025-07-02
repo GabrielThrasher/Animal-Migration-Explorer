@@ -1,129 +1,330 @@
-# handling whitespace, invalid inputs, back/quit
 import sqlite3
-from chatbot import answer_query 
-def page_divider():
-    return str("- " * 50)
+import textwrap
+from chatbot.chatbot import answer_query
+from map_generation.generate_map import generate_map
 
-def get_animal_selection():
-    dictionary = {
-        "Wetlands": ["Cranes", "White-fronted Geese"],   #White-fronted_Geese
-        "Forests": ["Red-backed Shrike", "White-crested Elaenia"],
-        "Artic": ["Snowy Owls", "Ringed Seals"], 
-        "Marine": ["Loggerhead Sea Turtles", "Common Terns", "Caspian Terns"]
-    }
-    return dictionary
-def start_page():
-    print(page_divider())
-    print("Welcome to Animal Migration Explorer!")
-    prompt = "press s to start or q to terminate the program:  "
-    user_input = input(prompt).lower().strip()
-    
-    valid_input = ["s", "q"]
-    while user_input not in valid_input:
-        user_input = input(prompt).lower().strip()
-    
-    if user_input == "s":
-        print("Valid commands: s to go to start page, q to quit, b to go back one page")
-        choose_habitat()
 
-    
-    
-def choose_habitat(): 
-    print(page_divider())
-    global valid_list_of_commands 
-    valid_list_of_commands = ["s", "q", "b"]
-    valid_habitats = list(get_animal_selection().keys()) 
-    habitat_prompt = "What habitat are you interested in?\n - " + "\n - ".join(valid_habitats) + "\nType your answer below: \n"
-    habitat = input(habitat_prompt).title().strip()
-    
+class CLI:
+    def __init__(self, program_char_width=120, page_char_margin=3):
+        self.valid_list_of_commands = ["w", "q", "b"]
+        self.program_char_width = program_char_width
+        self.page_char_margin = page_char_margin
+        self.page_char_width = program_char_width - page_char_margin
+        self.invalid_input_prefix = ">>>> INVALID INPUT -- PLEASE TRY AGAIN. "
+        self.page_divider = "=" * self.program_char_width
+        self.section_divider = "-" * (
+                self.page_char_width - self.page_char_margin
+        )
+        self.page_edge = "|"
+        self.animal_selection = {
+            "Wetlands": 
+                ["Cranes", "White-fronted Geese"],
+            "Forests": 
+                ["Red-backed Shrike", "White-crested Elaenia"],
+            "Artic": 
+                ["Snowy Owls", "Ringed Seals"],
+            "Marine": 
+                ["Loggerhead Sea Turtles", "Common Terns", "Caspian Terns"]
+        }
+        self.animal = None
+        self.habitat = None
+        self.chatbot_convo = ""
+        self.program_running = True
 
-    while habitat not in valid_habitats and habitat.lower() not in valid_list_of_commands: 
-        habitat = input(habitat_prompt).title().strip()
-
-    if habitat.lower() == "s" or habitat.lower() == "b":
-        start_page()
-    elif habitat.lower() != "q":
-        choose_animal(habitat)
+    def get_title_header(self, title):
+        title = (self.page_edge + " " + title + " " * 
+                 (self.program_char_width - 2 * len(self.page_edge) - 
+                  len(title) - 1) + self.page_edge)
     
+        header = (
+                self.page_divider + "\n" + title + "\n" +
+                self.page_divider
+        )
     
-def choose_animal(habitat):   
-    print(page_divider())
-    dictionary = get_animal_selection()
-    prompt = "Select a "+ habitat +" animal:\n - " + "\n - ".join(dictionary[habitat]) + "\nType your answer below: \n"
-    animal = input(prompt).lower().strip()
-   
-    lower_dictionary  = [x.lower() for x in dictionary[habitat]]
+        return header
     
-    while (animal not in lower_dictionary) and animal not in valid_list_of_commands:
-        animal = input(prompt).lower().strip()
-
-    i = lower_dictionary.index(animal)
-    temp = dictionary[habitat][i]
-
-    if animal.lower() == "s":
-        start_page()
-    elif animal.lower() == "b":
-        choose_habitat()
-    elif animal.lower() != "q": 
-        get_article_info(temp,habitat)
-
-def get_article_info(animal,habitat):
-    print(page_divider())
-
-    animal = animal.replace(" ", "_")
-    #UPDATE PATH oF DB 
-    conn = sqlite3.connect("../database/articles/articles.db")  
-    cursor = conn.cursor()
+    def wrap_text(self, text, header=False, print_text=True,
+                  separate_section=True, suffix=""):
+        left_margin = self.page_edge + " " * (self.page_char_margin - 1)
+        max_char_width = self.page_char_width
     
-    #White-fronted_Geese
+        if header:
+            left_margin = ""
+            max_char_width = self.program_char_width
     
-    animal_query = f"SELECT * FROM '{animal}'"
-    cursor.execute(animal_query)
-    rows = cursor.fetchall()
-    count = 1
-    for url,summary in rows:
-        print(f"Article {count}:")
-        print(url)
-        print(summary + "\n")
-        count += 1
-    #go back option 
-
-    prompt = "Type m to generate a migration pattern map or c to access the chatbot:  "
+        wrapped_text = "\n".join(textwrap.fill(
+            line, width=max_char_width,
+            initial_indent=left_margin, subsequent_indent=left_margin
+        ) for line in text.splitlines())
     
-    valid_input = ["m","c"]
-
-    user_input = input(prompt).strip().lower()
-   
-    while user_input not in valid_input and user_input not in valid_list_of_commands:
-        user_input = input(prompt).strip().lower()
-      
-    if user_input == "b":
-        choose_animal(habitat)
-    elif user_input == "s":
-        start_page()
-    elif user_input == "m":
-        #map fun
-        print("f")
-    elif user_input == "c":
-        chatbot(animal,habitat)
+        if not suffix:
+            if not header:
+                lines = wrapped_text.splitlines()
+                for i, line in enumerate(lines):
+                    right_margin = (
+                            " " * (self.program_char_width - len(line) - 1) +
+                            self.page_edge
+                    )
+                    lines[i] = line + right_margin
     
-
-def chatbot(animal,habitat):
-    valid = True
-    while valid: 
-        print(page_divider())
-        query = input("Ask the chatbot a question: \n").strip()
-        if query.lower() in valid_list_of_commands:
-            valid  = False
-            if query.lower() == "b":
-                get_article_info(animal, habitat)
-            elif query.lower() == "s":
-                start_page()
-            elif query.lower() == "q":
-                break 
+                wrapped_text = "\n".join(lines)
+    
+        else:
+            wrapped_text += suffix
+    
+        if separate_section:
+            wrapped_text = (
+                    self.page_edge + " " * (
+                    self.program_char_width - 2 * len(self.page_edge)
+            ) + self.page_edge + "\n" + wrapped_text
+            )
+    
+        if print_text:
+            print(
+                wrapped_text.encode('ascii', errors='ignore').decode()
+            )
+        else:
+            return wrapped_text
         
-        print(answer_query(query))
+    def wrap_page_divider(self):
+        self.wrap_text(
+            self.page_divider, header=True, separate_section=False
+        )
+        self.wrap_text("", header=True, separate_section=False)
+    
+    def wrap_header(self, title):
+        self.wrap_page_divider()
+        self.wrap_text(
+            self.get_title_header(title), header=True, separate_section=False
+        )
+    
+    def wrap_prompt(self, message):
+        return input(self.wrap_text(
+            message, print_text=False, suffix=" ")
+        ).strip()
+    
+    def wrap_invalid_prompt(self, message):
+        return input(self.wrap_text(
+            self.invalid_input_prefix + message, print_text=False, suffix=" ",
+            separate_section=False
+        )
+        ).strip()
+
+    def get_options_format(self, options):
+        options_str = ""
+    
+        for i, option in enumerate(options):
+            options_str += f"{i + 1}. {option}\n"
+    
+        return options_str.strip()
+    
+    def is_in_range(self, str_num, upperbound, lowerbound=1):
+        if not str_num.isdigit():
+            return False
+    
+        int_num = int(str_num)
+        if lowerbound <= int_num <= upperbound:
+            return True
+    
+        return False
+
+    def quit_page(self):
+        self.wrap_header("Quit Page")
+        self.wrap_text(
+            "Thank you for using our program! Goodbye!", 
+            separate_section=False
+        )
+        self.wrap_page_divider()
+        self.program_running = False
+
+    def welcome_page(self):
+        self.wrap_header("Welcome Page")
+        self.wrap_text(
+            "Welcome to Animal Migration Explorer!", separate_section=False
+        )
+        self.wrap_text(
+            "This is an interactive program that combines data visualization "
+            "through maps, curated articles, and real-time prompts to provide "
+            "both visual and textual insights into migration patterns of "
+            "animals. To be able to access these features, you must first "
+            "choose a habitat and animal within said habitat between the next "
+            "two pages."
+        )
+        self.wrap_text(
+            "For any prompt on future pages, the following commands will always"
+            " be available for you to type in: 'w' to go to welcome page; 'b' "
+            "to go back one page; 'q' to terminate the program."
+        )
+        self.wrap_text(
+            "NOTE: This program is in beta, and as such the data available is "
+            "limited to the given selections due to Movebank's API's "
+            "animal-finding limitation."
+        )
+    
+        prompt = "Type 's' to start or 'q' to terminate the program: "
+        user_input = self.wrap_prompt(prompt).lower()
+        
+        valid_input = ["s", "q"]
+        while user_input not in valid_input:
+            user_input = self.wrap_invalid_prompt(prompt).lower()
+        
+        if user_input == "s":
+            self.habitat_page()
+        elif user_input == "q":
+            self.quit_page()
+
+    def habitat_page(self):
+        self.wrap_header("Habitat Page")
+    
+        self.wrap_text(
+            f"The following are the available habitats to choose from:",
+            separate_section=False
+        )
+        habitat_options = list(self.animal_selection.keys())
+        self.wrap_text(self.get_options_format(habitat_options))
+    
+        prompt = "Type in the number corresponding to the habitat:"
+        user_input = self.wrap_prompt(prompt).lower()
+    
+        while (not self.is_in_range(user_input, len(habitat_options)+1) and 
+               user_input not in self.valid_list_of_commands):
+            user_input = self.wrap_invalid_prompt(prompt).lower()
+    
+        if user_input == "w":
+            self.welcome_page()
+        elif user_input == "b":
+            self.welcome_page()
+        elif user_input == "q":
+            self.quit_page()
+        else:
+            self.habitat = habitat_options[int(user_input)-1]
+            self.animal_page()
+        
+    def animal_page(self):
+        self.wrap_header("Animal Page")
+    
+        self.wrap_text(
+            f"The following are the available {self.habitat.lower()} "
+            f"animals to choose from:", separate_section=False
+        )
+        animal_selection = self.animal_selection[self.habitat]
+        self.wrap_text(self.get_options_format(animal_selection))
+    
+        prompt = f"Type in the number corresponding to the animal:"
+        user_input = self.wrap_prompt(prompt).lower()
+    
+        while (not self.is_in_range(user_input, len(animal_selection)+1) and 
+               user_input not in self.valid_list_of_commands):
+            user_input = self.wrap_invalid_prompt(prompt).lower()
+    
+        if user_input == "w":
+            self.welcome_page()
+        elif user_input == "b":
+            self.habitat_page()
+        elif user_input == "q":
+            self.quit_page()
+        else:
+            self.animal = animal_selection[int(user_input)-1]
+            self.article_page()
+
+    def article_page(self):
+        self.wrap_header("Article Page")
+    
+        self.wrap_text(
+            f"The following are links to and summaries about the "
+            f"recommended reads for {self.animal.lower()}.",
+            separate_section=False
+        )
+    
+        animal_table = self.animal.replace(" ", "_")
+        conn = sqlite3.connect("../database/articles.db")
+        cursor = conn.cursor()
+        animal_query = f"SELECT * FROM '{animal_table}'"
+        cursor.execute(animal_query)
+        rows = cursor.fetchall()
+    
+        for i, (url, summary) in enumerate(rows):
+            self.wrap_text(f"Article {i+1}:")
+            self.wrap_text(url)
+            self.wrap_text(summary)
+
+        prompt = ("Type 'm' to generate a migration pattern map or 'c' to "
+                  "access the chatbot:")
+
+        user_input = ""
+        while (user_input not in self.valid_list_of_commands and
+               self.program_running):
+            user_input = self.wrap_prompt(prompt).lower()
+            valid_input = ["m", "c"]
+            while (user_input not in valid_input and user_input not in
+                   self.valid_list_of_commands):
+                user_input = self.wrap_invalid_prompt(prompt).lower()
+
+            if user_input == "b":
+                self.animal_page()
+            elif user_input == "w":
+                self.welcome_page()
+            elif user_input == "q":
+                self.quit_page()
+            elif user_input == "m":
+                save_path = generate_map(
+                    self.animal.replace(" ", "_"),
+                    "../database/coordinates.db",
+                    save_dir="map_generation/saved_maps/"
+                )
+                self.wrap_text("Generated and saved the migration pattern map "
+                               f"at {save_path}.")
+            elif user_input == "c":
+                self.chatbot_page()
+        
+    def chatbot_page(self):
+        self.wrap_header("Chatbot Page")
+    
+        self.wrap_text(
+            f"Ask any {self.animal.lower()}-related questions to the "
+            f"chatbot below. Remember, to leave the page type 'b'. Type 's' "
+            f"to save you conversation with the chatbot to a file (end the "
+            f"program to view its most recent contents).",
+            separate_section=False
+        )
+
+        self.chatbot_convo = ""
+        user_input = ""
+        while (user_input not in self.valid_list_of_commands and
+               self.program_running):
+            self.wrap_text(self.section_divider)
+            prompt = "Type here:"
+            user_input = self.wrap_prompt(prompt)
+    
+            if user_input.lower() in self.valid_list_of_commands:
+                if user_input == "b":
+                    self.article_page()
+                elif user_input == "w":
+                    self.welcome_page()
+                elif user_input == "q":
+                    self.quit_page()
+
+                break
+
+            elif user_input.lower() == "s":
+                chatbot_dir = "./chatbot/"
+                convo_file_path = chatbot_dir + "chatbot_convo.txt"
+                with open(convo_file_path, "w") as file:
+                    file.write(self.chatbot_convo.strip())
+                self.wrap_text(
+                    f"Conversation saved successfully at {convo_file_path}."
+                )
+
+            else:
+                self.chatbot_convo += "\n\n" + "YOU ASKED:" + "\n" + user_input
+                response = answer_query(user_input)
+                self.chatbot_convo += (
+                        "\n" + "-" * 150 + "\n" + "CHATBOT ANSWERED:" + "\n" +
+                        response + "\n" + "=" * 200
+                )
+                self.wrap_text(response)
     
    
-
-start_page()
+if "__main__" == __name__:
+    cli = CLI()
+    cli.welcome_page()

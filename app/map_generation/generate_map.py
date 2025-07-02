@@ -23,7 +23,7 @@ def get_coordinates(db_path, table_name):
     return data_by_column
 
 
-def setup_map(lats, lons, months, years, map_name):
+def setup_map(lats, lons, months, years, map_name, save_path):
     formatted_months = [
         calendar.month_name[int(month)][:3] for month in months
     ]
@@ -76,16 +76,19 @@ def setup_map(lats, lons, months, years, map_name):
         handles=legend_elements, loc='best', title="Arrow Number: Date"
         )
 
-    save_dir_path = "saved_maps/" + map_name + ".png"
-    plt.savefig(save_dir_path, bbox_inches="tight")
+    plt.savefig(save_path, bbox_inches="tight")
 
 
-def generate_map(table_name, db_path="../../database/coordinates.db"):
+def generate_map(table_name, db_path="../../database/coordinates.db",
+                 save_dir="saved_maps/"):
+    save_path = save_dir + table_name + ".png"
     data = get_coordinates(db_path, table_name)
     setup_map(
         data["latitude"], data["longitude"], data["month"], data["year"],
-        table_name
+        table_name, save_path
     )
+
+    return save_path
 
 
 if __name__ == "__main__":
