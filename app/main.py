@@ -1,7 +1,7 @@
 import sqlite3
 import textwrap
 from app.chatbot.chatbot import answer_query
-from map_generation.generate_map import generate_map
+from app.map_generation.generate_map import generate_map
 
 
 class CLI:
