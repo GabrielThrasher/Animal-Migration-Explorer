@@ -10,7 +10,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      API_key: AIzaSyA0i0UfkfElGlmPcE0zhliyZsvsikvgPQY
+      API_key: ${{ secrets.API_key }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
