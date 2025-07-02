@@ -30,4 +30,5 @@ jobs:
       run: |
         PYTHONPATH=. pytest
     - name: Check Style
-      run: pycodestyle --first *.py
+      run: pycodestyle --first app/
+
