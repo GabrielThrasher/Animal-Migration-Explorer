@@ -24,14 +24,12 @@ class CLI:
         )
         self.page_edge = "|"
         self.animal_selection = {
-            "Wetlands": 
-                ["Cranes", "White-fronted Geese"],
-            "Forests": 
-                ["Red-backed Shrike", "White-crested Elaenia"],
-            "Artic": 
-                ["Snowy Owls", "Ringed Seals"],
-            "Marine": 
-                ["Loggerhead Sea Turtles", "Common Terns", "Caspian Terns"]
+            "Wetlands": ["Cranes", "White-fronted Geese"],
+            "Forests": ["Red-backed Shrike", "White-crested Elaenia"],
+            "Artic": ["Snowy Owls", "Ringed Seals"],
+            "Marine": [
+                "Loggerhead Sea Turtles", "Common Terns", "Caspian Terns"
+            ]
         }
         self.animal = None
         self.habitat = None
@@ -42,28 +40,27 @@ class CLI:
         title = (self.page_edge + " " + title + " " * 
                  (self.program_char_width - 2 * len(self.page_edge) - 
                   len(title) - 1) + self.page_edge)
-    
+
         header = (
-                self.page_divider + "\n" + title + "\n" +
-                self.page_divider
+                self.page_divider + "\n" + title + "\n" + self.page_divider
         )
-    
+
         return header
-    
+
     def wrap_text(self, text, header=False, print_text=True,
                   separate_section=True, suffix=""):
         left_margin = self.page_edge + " " * (self.page_char_margin - 1)
         max_char_width = self.page_char_width
-    
+
         if header:
             left_margin = ""
             max_char_width = self.program_char_width
-    
+
         wrapped_text = "\n".join(textwrap.fill(
             line, width=max_char_width,
             initial_indent=left_margin, subsequent_indent=left_margin
         ) for line in text.splitlines())
-    
+
         if not suffix:
             if not header:
                 lines = wrapped_text.splitlines()
@@ -75,41 +72,41 @@ class CLI:
                     lines[i] = line + right_margin
     
                 wrapped_text = "\n".join(lines)
-    
+
         else:
             wrapped_text += suffix
-    
+
         if separate_section:
             wrapped_text = (
-                    self.page_edge + " " * (
+                self.page_edge + " " * (
                     self.program_char_width - 2 * len(self.page_edge)
-            ) + self.page_edge + "\n" + wrapped_text
+                ) + self.page_edge + "\n" + wrapped_text
             )
-    
+
         if print_text:
             print(
                 wrapped_text.encode('ascii', errors='ignore').decode()
             )
         else:
             return wrapped_text
-        
+
     def wrap_page_divider(self):
         self.wrap_text(
             self.page_divider, header=True, separate_section=False
         )
         self.wrap_text("", header=True, separate_section=False)
-    
+
     def wrap_header(self, title):
         self.wrap_page_divider()
         self.wrap_text(
             self.get_title_header(title), header=True, separate_section=False
         )
-    
+
     def wrap_prompt(self, message):
         return input(self.wrap_text(
             message, print_text=False, suffix=" ")
         ).strip()
-    
+
     def wrap_invalid_prompt(self, message):
         return input(self.wrap_text(
             self.invalid_input_prefix + message, print_text=False, suffix=" ",
@@ -119,20 +116,20 @@ class CLI:
 
     def get_options_format(self, options):
         options_str = ""
-    
+
         for i, option in enumerate(options):
             options_str += f"{i + 1}. {option}\n"
-    
+
         return options_str.strip()
-    
+
     def is_in_range(self, str_num, upperbound, lowerbound=1):
         if not str_num.isdigit():
             return False
-    
+
         int_num = int(str_num)
         if lowerbound <= int_num <= upperbound:
             return True
-    
+
         return False
 
     def quit_page(self):
@@ -158,23 +155,23 @@ class CLI:
             "two pages."
         )
         self.wrap_text(
-            "For any prompt on future pages, the following commands will always"
-            " be available for you to type in: 'w' to go to welcome page; 'b' "
-            "to go back one page; 'q' to terminate the program."
+            "For any prompt on future pages, the following commands will "
+            "always be available for you to type in: 'w' to go to welcome "
+            "page; 'b' to go back one page; 'q' to terminate the program."
         )
         self.wrap_text(
             "NOTE: This program is in beta, and as such the data available is "
             "limited to the given selections due to Movebank's API's "
             "animal-finding limitation."
         )
-    
+
         prompt = "Type 's' to start or 'q' to terminate the program: "
         user_input = self.wrap_prompt(prompt).lower()
-        
+
         valid_input = ["s", "q"]
         while user_input not in valid_input:
             user_input = self.wrap_invalid_prompt(prompt).lower()
-        
+
         if user_input == "s":
             self.habitat_page()
         elif user_input == "q":
@@ -182,7 +179,7 @@ class CLI:
 
     def habitat_page(self):
         self.wrap_header("Habitat Page")
-    
+
         self.wrap_text(
             f"The following are the available habitats to choose from:",
             separate_section=False
@@ -192,11 +189,11 @@ class CLI:
     
         prompt = "Type in the number corresponding to the habitat:"
         user_input = self.wrap_prompt(prompt).lower()
-    
+
         while (not self.is_in_range(user_input, len(habitat_options)+1) and 
                user_input not in self.valid_list_of_commands):
             user_input = self.wrap_invalid_prompt(prompt).lower()
-    
+
         if user_input == "w":
             self.welcome_page()
         elif user_input == "b":
@@ -206,24 +203,24 @@ class CLI:
         else:
             self.habitat = habitat_options[int(user_input)-1]
             self.animal_page()
-        
+
     def animal_page(self):
         self.wrap_header("Animal Page")
-    
+
         self.wrap_text(
             f"The following are the available {self.habitat.lower()} "
             f"animals to choose from:", separate_section=False
         )
         animal_selection = self.animal_selection[self.habitat]
         self.wrap_text(self.get_options_format(animal_selection))
-    
+
         prompt = f"Type in the number corresponding to the animal:"
         user_input = self.wrap_prompt(prompt).lower()
-    
+
         while (not self.is_in_range(user_input, len(animal_selection)+1) and 
                user_input not in self.valid_list_of_commands):
             user_input = self.wrap_invalid_prompt(prompt).lower()
-    
+
         if user_input == "w":
             self.welcome_page()
         elif user_input == "b":
@@ -236,20 +233,20 @@ class CLI:
 
     def article_page(self):
         self.wrap_header("Article Page")
-    
+
         self.wrap_text(
             f"The following are links to and summaries about the "
             f"recommended reads for {self.animal.lower()}.",
             separate_section=False
         )
-    
+
         animal_table = self.animal.replace(" ", "_")
         conn = sqlite3.connect("./database/articles.db")
         cursor = conn.cursor()
         animal_query = f"SELECT * FROM '{animal_table}'"
         cursor.execute(animal_query)
         rows = cursor.fetchall()
-    
+
         for i, (url, summary) in enumerate(rows):
             self.wrap_text(f"Article {i+1}:")
             self.wrap_text(url)
@@ -283,10 +280,10 @@ class CLI:
                                f"at {save_path}.")
             elif user_input == "c":
                 self.chatbot_page()
-        
+
     def chatbot_page(self):
         self.wrap_header("Chatbot Page")
-    
+
         self.wrap_text(
             f"Ask any {self.animal.lower()}-related questions to the "
             f"chatbot below. Remember, to leave the page type 'b'. Type 's' "
@@ -302,7 +299,7 @@ class CLI:
             self.wrap_text(self.section_divider)
             prompt = "Type here:"
             user_input = self.wrap_prompt(prompt)
-    
+
             if user_input.lower() in self.valid_list_of_commands:
                 if user_input == "b":
                     self.article_page()
@@ -330,8 +327,8 @@ class CLI:
                         response + "\n" + "=" * 200
                 )
                 self.wrap_text(response)
-    
-   
+
+
 if "__main__" == __name__:
     if len(sys.argv) == 1:
         cli = CLI()
