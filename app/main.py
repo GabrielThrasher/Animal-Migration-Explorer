@@ -38,7 +38,7 @@ class CLI:
 
     def get_title_header(self, title):
         title = (self.page_edge + " " + title + " " *
-                 (self.program_char_width - 2 * len(self.page_edge) - 
+                 (self.program_char_width - 2 * len(self.page_edge) -
                   len(title) - 1) + self.page_edge)
 
         header = (
@@ -135,7 +135,7 @@ class CLI:
     def quit_page(self):
         self.wrap_header("Quit Page")
         self.wrap_text(
-            "Thank you for using our program! Goodbye!", 
+            "Thank you for using our program! Goodbye!",
             separate_section=False
         )
         self.wrap_page_divider()
@@ -186,11 +186,11 @@ class CLI:
         )
         habitat_options = list(self.animal_selection.keys())
         self.wrap_text(self.get_options_format(habitat_options))
-    
+
         prompt = "Type in the number corresponding to the habitat:"
         user_input = self.wrap_prompt(prompt).lower()
 
-        while (not self.is_in_range(user_input, len(habitat_options)+1) and 
+        while (not self.is_in_range(user_input, len(habitat_options)+1) and
                user_input not in self.valid_list_of_commands):
             user_input = self.wrap_invalid_prompt(prompt).lower()
 
@@ -217,7 +217,7 @@ class CLI:
         prompt = f"Type in the number corresponding to the animal:"
         user_input = self.wrap_prompt(prompt).lower()
 
-        while (not self.is_in_range(user_input, len(animal_selection)+1) and 
+        while (not self.is_in_range(user_input, len(animal_selection)+1) and
                user_input not in self.valid_list_of_commands):
             user_input = self.wrap_invalid_prompt(prompt).lower()
 
