@@ -39,3 +39,44 @@ def test_animal_page_sets_animal(monkeypatch):
         cli.animal_page()
         assert cli.animal == 'Cranes'
         mock_article_page.assert_called_once()
+
+from unittest.mock import patch, MagicMock
+
+def test_article_page_map_option(monkeypatch):
+    cli = CLI()
+    cli.animal = 'Cranes'
+    cli.habitat = 'Wetlands'
+
+    # Mock database call
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_cursor.fetchall.return_value = [("http://example.com", "Sample Summary")]
+    mock_conn.cursor.return_value = mock_cursor
+
+    monkeypatch.setattr('builtins.input', lambda _: 'm')  # simulate 'm' for map
+
+    with patch('sqlite3.connect', return_value=mock_conn), \
+         patch('app.map_generation.generate_map') as mock_generate_map:
+        
+        mock_generate_map.return_value = "path/to/generated_map.png"
+        cli.article_page()
+        mock_generate_map.assert_called_once_with(
+            'Cranes',
+            '../database/coordinates.db',
+            save_dir='map_generation/saved_maps/'
+        )
+
+def test_chatbot_page_saves_convo(monkeypatch, tmp_path):
+    cli = CLI()
+    cli.animal = 'Cranes'
+    cli.habitat = 'Wetlands'
+    cli.chatbot_convo = "YOU ASKED:\nWhere do cranes go?\nCHATBOT ANSWERED:\nThey migrate south."
+
+    # Simulate user typing 's' to save the convo
+    monkeypatch.setattr('builtins.input', lambda _: 's')
+
+    with patch('builtins.open', create=True) as mock_open:
+        cli.chatbot_page()
+        mock_open.assert_called_once()
+        file_handle = mock_open()
+        file_handle.write.assert_called_once_with(cli.chatbot_convo.strip())
