@@ -8,19 +8,32 @@ This is an interactive program that combines data visualization through maps, cu
 - Setup
   
 ## Preview 
-(add imaes)
+Map Generation: 
+![image](https://github.com/user-attachments/assets/b5939e77-a1cf-46e2-9172-792c40c8b2de)
+
+Article Summaries:
+![image](https://github.com/user-attachments/assets/a630bb84-0c33-4dfd-ac17-ad0be27395c9)
+
 
 ## Technologies 
 Language: 
-Python
+- Python
 
 API: 
-MoveBank API
-Google GenAI API 
+- MoveBank API
+- Google GenAI API 
 
 Database:
-SQL 
+- SQL 
 
 ## Setup 
 To run this project: 
-(i hva e a requirements file they have to download it) 
+```bash
+git clone https://github.com/GabrielThrasher/Animal-Migration-Explorer.git
+cd Animal-Migration-Explorer
+```
+
+```bash
+pip install -r requirements.txt
+python Animal-Migration-Explorer main.py
+``` 
