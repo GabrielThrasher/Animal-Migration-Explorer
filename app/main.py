@@ -125,5 +125,5 @@ def chatbot(animal,habitat):
         print(answer_query(query))
     
    
-
-start_page()
+if __name__ == "__main__":
+    start_page()
