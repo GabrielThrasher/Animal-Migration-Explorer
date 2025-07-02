@@ -1,6 +1,6 @@
 import sqlite3
 import textwrap
-from chatbot.chatbot import answer_query
+from app.chatbot.chatbot import answer_query
 from map_generation.generate_map import generate_map
 
 
