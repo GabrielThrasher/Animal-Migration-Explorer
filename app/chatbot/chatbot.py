@@ -12,10 +12,10 @@ client = genai.Client(
 
 
 def answer_query(user_query): 
-    response = client.models.generate_content(
+    response=client.models.generate_content(
         model="gemini-2.5-flash",
         config=types.GenerateContentConfig(
         system_instruction=user_query
       ),
-    contents ="",)
+    contents="",)
     return response.text 
