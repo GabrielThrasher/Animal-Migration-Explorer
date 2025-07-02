@@ -37,7 +37,7 @@ class CLI:
         self.program_running = True
 
     def get_title_header(self, title):
-        title = (self.page_edge + " " + title + " " * 
+        title = (self.page_edge + " " + title + " " *
                  (self.program_char_width - 2 * len(self.page_edge) - 
                   len(title) - 1) + self.page_edge)
 
@@ -70,7 +70,7 @@ class CLI:
                             self.page_edge
                     )
                     lines[i] = line + right_margin
-    
+
                 wrapped_text = "\n".join(lines)
 
         else:
