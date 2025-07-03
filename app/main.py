@@ -3,6 +3,9 @@ import sys
 import textwrap
 from app.chatbot.chatbot import answer_query
 from app.map_generation.generate_map import generate_map
+import shutil
+import glob
+import os
 
 
 class CLI:
@@ -252,14 +255,15 @@ class CLI:
             self.wrap_text(url)
             self.wrap_text(summary)
 
-        prompt = ("Type 'm' to generate a migration pattern map or 'c' to "
-                  "access the chatbot:")
+        prompt = ("Type 'm' to generate a migration pattern map, 'c' to "
+                  f"access the chatbot, or 'p' to get a picture of "
+                  f"the {self.animal}:")
 
         user_input = ""
         while (user_input not in self.valid_list_of_commands and
                self.program_running):
             user_input = self.wrap_prompt(prompt).lower()
-            valid_input = ["m", "c"]
+            valid_input = ["m", "c", "p"]
             while (user_input not in valid_input and user_input not in
                    self.valid_list_of_commands):
                 user_input = self.wrap_invalid_prompt(prompt).lower()
@@ -280,6 +284,18 @@ class CLI:
                                f"at {save_path}.")
             elif user_input == "c":
                 self.chatbot_page()
+            elif user_input == "p":
+                src_folder = "./database/animal_imgs"
+                dst_folder = "./app/animal_images"
+
+                file_animal_name = self.animal.replace(" ", "_")
+                target_img = glob.glob(f"{src_folder}/{file_animal_name}.*")
+                src_path = target_img[0]
+                file_name = src_path.split("\\")[-1]
+                dst_path = f"{dst_folder}/{file_name}"
+                shutil.copyfile(src_path, dst_path)
+
+                self.wrap_text(f"Image saved successfully at {dst_path}.")
 
     def chatbot_page(self):
         self.wrap_header("Chatbot Page")
