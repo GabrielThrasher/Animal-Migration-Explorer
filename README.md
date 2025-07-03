@@ -38,6 +38,6 @@ pip install -r requirements.txt
 ```
 Afterwards, to run the program, make sure you are in the `Animal-Migration-Explorer` directory and execute the command below.
 ```bash
-python app.main {width} {margin}
+python -m app.main {width} {margin}
 ```
 where width and margin are both integers and are both optional parameters. Acceptable width values are between 60 and 200 and is the number of characters wide you want your program to be. Meanwhile, margin, like in a Word document, is the amount of spaces (in this case, characters) you want on the edge of your program before the words appear. Margin values that are allowed are between 2 and 5. If you do not specify parameters for either width or margin, then the non-specified parameter will be set to their default value: width at 100 and margin at 3.
